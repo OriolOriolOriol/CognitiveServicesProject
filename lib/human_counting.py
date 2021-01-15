@@ -50,70 +50,7 @@ def detect(frame,detection_graph):
     return boxes_list, scores[0].tolist(), [int(x) for x in classes[0].tolist()], int(num[0])
 
 
-
-
-
-'''
-Funzione che potrebbe non servire più
-Errore da considerare:
-Durante i vari frame il modello può intercettare più persone dei ground truth!? se ho TP=6 e FN=5 ovviamente mi andrà list of the range....
-'''
-def confronto(modello,ground_truth,index,index2,img):
-
-   #try:
-    #Lavoro per tirare fuori ogni singola coppia dei ground_truth e confrontarlo con i bounding box
-    lista_ground_truth_temp=[]
-    lista_ground_truth_frame=ground_truth[index]
-    lista_ground_truth_frame=lista_ground_truth_frame.split("),")
-    for i in lista_ground_truth_frame:
-        rettangolo_ground_truth=str(i)
-        if ");" in i:
-            rettangolo_ground_truth=rettangolo_ground_truth.replace(");\n","")
-        lista_ground_truth_temp.append(rettangolo_ground_truth)
-    
-    
-    #Confronto tra la coppia del modello di quel particolare frame e la coppia ground truth di quel particolare frame
-    ground_truth_now=lista_ground_truth_temp[index2]
-    ground_truth_now1=[]
-    #mi trasforma le coordinate di ogni singolob ox in array(Non so se mi può servire)
-    #modello = np.asarray(modello)
-    ground_truth_now=ground_truth_now.split(",")
-    ground_truth_now1=[]
-    for element in ground_truth_now:
-        if "(" in element:
-            element=element.replace("(","")
-        ground_truth_now1.append(element)
-    
-    #trasformo le coordinate da stringhe a interi dei singoli box
-    for i in range(0, len(ground_truth_now1)): 
-        ground_truth_now1[i] = int(ground_truth_now1[i]) 
-
-
-
-    modello=tuple(modello) #<-- classico quello che per ora va
-    modello=np.array(modello)
-
-    #ground_truth_now1= tuple(ground_truth_now1) <--# quello che per ora va
-    ground_truth_now1=np.array(ground_truth_now1)
-    print(f"MODELLO: {str(modello)} GROUND_TRUTH: {str(ground_truth_now1)}")
-    idxs_true, idxs_pred,ious,labels=evaluator.match_bboxes(ground_truth_now1,modello)
-    print(f"{str(idxs_pred)}   {str(idxs_true)}  {str(ious)}  {str(labels)}")
-    time.sleep(5000)
-    #print(f"Modello: {str(modello)} ---> Ground Truth: {str(ground_truth_now1)}")
-
-
-    #cv2.rectangle(img, (ground_truth_now1[0],ground_truth_now1[1]),(ground_truth_now1[2],ground_truth_now1[3]), (255, 0, 0), 2)
-    #cv2.rectangle(img,  (modello[0],modello[1]),(modello[2],modello[3]), (255, 0, 0), 2)
-    #iou=evaluator.iou(ground_truth_now1,modello)
-    #iou = evaluator.bb_intersection_over_union(ground_truth_now1, modello)
-# cv2.putText(img, "IoU: {:.4f}".format(iou), (10, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-# cv2.imshow("Image", img)
-# cv2.waitKey(0)
-    #time.sleep(3)
-    #return iou
-   #except IndexError:
-   #    pass
-   
+ #LETTURA GROUND TRUTH DATASET KITTY  
 
 def lettura_ground_truth(index):
     lista_coordinate=[]
