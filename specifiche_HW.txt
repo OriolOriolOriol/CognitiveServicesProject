@@ -1,0 +1,5 @@
+Nome DEVICE: Dell Inspiron 15z
+Scheda Grafica: intel(R) HD Graphics 4000
+Processore: interl(R)Core(TM) i7-3537 CPU@2.00GHZ
+RAM:8.00 GB
+
