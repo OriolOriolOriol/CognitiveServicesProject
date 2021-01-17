@@ -1,8 +1,4 @@
 Model Name,Ground Truth(GT),True Positive(TP),False Positive(FP),False Negative(FN),Average Precision,Average Recall,Average Time
-ssd_mobilenet_v1_coco_2018_01_28,782,56,67,726,0.1842528735632184,0.05464969896004381,358.3393397331238
-Model Name,Ground Truth(GT),True Positive(TP),False Positive(FP),False Negative(FN),Average Precision,Average Recall,Average Time
+ssd_inception_v2_coco_2018_01_28,782,56,67,726,0.1842528735632184,0.05464969896004381,358.3393397331238
 mask_rcnn_inception_v2_coco_2018_01_28,782,671,118,111,0.9012494976288079,0.8807252326217843,508.90998220443726
-Model Name,Ground Truth(GT),True Positive(TP),False Positive(FP),False Negative(FN),Average Precision,Average Recall,Average Time
-ssd_inception_v2_coco_2018_01_28,782,100,67,682,0.31022988505747123,0.10350027367268749,368.91285133361816
-Model Name,Ground Truth(GT),True Positive(TP),False Positive(FP),False Negative(FN),Average Precision,Average Recall,Average Time
 faster_rcnn_inception_v2_coco_2018_01_28,782,611,219,171,0.8255087536984089,0.8307936507936509,485.4931466579437
