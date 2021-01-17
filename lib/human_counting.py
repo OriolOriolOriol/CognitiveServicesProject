@@ -21,6 +21,7 @@ tf.disable_v2_behavior()
 import tensorflow.python.util.deprecation as deprecation
 import matplotlib.pyplot as plt
 
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 evaluator = Evaluator()
@@ -84,121 +85,116 @@ def lettura_ground_truth(index):
 
 
 def run_detection(DIR,detection_graph,category_index,nome_video_risultato):
-   
-    frames=sorted(os.listdir(DIR))
-    conteggio_frame=1
-    IOU_threshold=0.90
+    lista_precisione_totale=[]
+    lista_recall_totale=[]
+    sommaTP_FINALE=[]
+    sommaFP_FINALE=[]
+    sommaFN_FINALE=[]
+    IOU_threshold=[0.5,0.75,0.90]
+    for i in IOU_threshold:
+        Soglia_iou=float(i)
+        print(f"IOU {Soglia_iou}")
+        frames=sorted(os.listdir(DIR))
+        conteggio_frame=1
 
-    TP=0
-    FP=0
-    FN=0
-
-    somma_true_positive = 0
-    somma_false_positive = 0
-    somma_false_negative = 0
-
-    lista_precisione=[]
-    lista_recall=[]
-    numero_totale_ground_truth=0
-    
-    start_time = time.time()
-    for element in frames:
-        lista_coordinate_modello_temp=[]
-        frame=DIR+"/"+element
-        image=cv2.imread(frame)
-        if image.size==0:
-            sys.exit("L'immagine non è stata caricata correttamente")
-        
-        boxes, scores, classes, num = detect(image,detection_graph)
-        print(Fore.YELLOW+ "FRAME N." + str(conteggio_frame))
-        lista_coordinate_gt=lettura_ground_truth(conteggio_frame)
-        numero_ground_truth=len(lista_coordinate_gt)
-        numero_totale_ground_truth+=numero_ground_truth
-
-        print(Fore.RED + "")
-
-        for i in range(len(boxes)):
-            if classes[i]==1 and scores[i] > 0.5:
-                #TP=+1
-                box=boxes[i]
-                box_modello=(box[1],box[0],box[3],box[2])
-                lista_coordinate_modello_temp.append(box_modello)
-            '''
-            if classes[i] !=1 and scores[i]!=0:
-                #FP+=1
-                box1=boxes[i]
-                box_modello1=(box1[1],box1[0],box1[3],box1[2])
-                #cv2.rectangle(image,(box[1],box1[0]),(box1[3],box1[2]),(255,0,0),2)
-            '''
-           
-        #Calcolo della IOU per ogni singolo frame
-        for x in lista_coordinate_gt:
-            x=tuple(x)
-            for y in lista_coordinate_modello_temp:
-                iou=evaluator.iou(x,y)
-                if iou >= IOU_threshold:
-                    TP+=1
-                    print(f"Ground Truth: {str(x)}    Bounding Box: {str(y)}     IOU: {str(iou)}")
-                    cv2.rectangle(image,(y[0],y[1]),(y[2],y[3]),(0,255,0),2)
-                elif iou > 0.2 and iou < IOU_threshold:
-                    FP+=1
-
-
-
-        detection=len(lista_coordinate_modello_temp)
-        FN=(numero_ground_truth-TP)
-        time.sleep(1)
-        #varie valutazioni
-        precisione_temp=evaluator.precision(int(TP),int(FP))
-        recall_temp=evaluator.Recall(int(TP),int(FN))
-        lista_precisione.append(precisione_temp)
-        lista_recall.append(recall_temp)
-
-
-
-
-
-        cv2.putText(image,'Detected = '+ str(detection),(10,100),cv2.FONT_HERSHEY_SIMPLEX, 1.25,(255,255,0),2,cv2.LINE_AA)
-        cv2.imwrite("/home/claudio/Scrivania/COGNITIVE_SERVICES_3.0/Risultati/"+ nome_video_risultato +"/result%04i.jpg" %conteggio_frame,image)
-        print(Fore.BLUE + f"Ground Truth: {str(numero_ground_truth)}   TP: {str(TP)}   FP: {str(FP)}  FN:{str(FN)}")
-        #passo al prossimo frame
-        conteggio_frame+=1
-        somma_true_positive+=TP
-        somma_false_negative+=FN
-        somma_false_positive+=FP
-        #Riazzero i parametri per il prossimo frame
         TP=0
         FP=0
         FN=0
-    
 
+        somma_true_positive = 0
+        somma_false_positive = 0
+        somma_false_negative = 0
+
+        lista_precisione=[]
+        lista_recall=[]
+        numero_totale_ground_truth=0
+        
+        start_time = time.time()
+        for element in frames:
+            lista_coordinate_modello_temp=[]
+            frame=DIR+"/"+element
+            image=cv2.imread(frame)
+            if image.size==0:
+                sys.exit("L'immagine non è stata caricata correttamente")
+            
+            boxes, scores, classes, num = detect(image,detection_graph)
+            print(Fore.YELLOW+ "FRAME N." + str(conteggio_frame))
+            lista_coordinate_gt=lettura_ground_truth(conteggio_frame)
+            numero_ground_truth=len(lista_coordinate_gt)
+            numero_totale_ground_truth+=numero_ground_truth
+
+            print(Fore.RED + "")
+
+            for i in range(len(boxes)):
+                if classes[i]==1 and scores[i] > 0.5:
+                    #TP=+1
+                    box=boxes[i]
+                    box_modello=(box[1],box[0],box[3],box[2])
+                    lista_coordinate_modello_temp.append(box_modello)
+            
+            
+            #Calcolo della IOU per ogni singolo frame
+            for x in lista_coordinate_gt:
+                x=tuple(x)
+                for y in lista_coordinate_modello_temp:
+                    iou=evaluator.iou(x,y)
+                    if iou >= Soglia_iou:
+                        TP+=1
+                        print(f"Ground Truth: {str(x)}    Bounding Box: {str(y)}     IOU: {str(iou)}")
+                        cv2.rectangle(image,(y[0],y[1]),(y[2],y[3]),(0,255,0),2)
+                    elif iou > 0.2 and iou < Soglia_iou:
+                        FP+=1
+
+
+
+            detection=len(lista_coordinate_modello_temp)
+            FN=(numero_ground_truth-TP)
+            time.sleep(1)
+            #varie valutazioni
+            precisione_temp=evaluator.precision(int(TP),int(FP))
+            recall_temp=evaluator.Recall(int(TP),int(FN))
+            lista_precisione.append(precisione_temp)
+            lista_recall.append(recall_temp)
+
+
+
+
+
+            cv2.putText(image,'Detected = '+ str(detection),(10,100),cv2.FONT_HERSHEY_SIMPLEX, 1.25,(255,255,0),2,cv2.LINE_AA)
+            cv2.imwrite("/home/claudio/Scrivania/COGNITIVE_SERVICES_3.0/Risultati/"+ nome_video_risultato +"/result%04i.jpg" %conteggio_frame,image)
+            print(Fore.BLUE + f"Ground Truth: {str(numero_ground_truth)}   TP: {str(TP)}   FP: {str(FP)}  FN:{str(FN)}")
+            #passo al prossimo frame
+            conteggio_frame+=1
+            somma_true_positive+=TP
+            somma_false_negative+=FN
+            somma_false_positive+=FP
+            #Riazzero i parametri per il prossimo frame
+            TP=0
+            FP=0
+            FN=0
+        
+
+        
+       
+        lista_precisione_totale.append(lista_precisione)
+        sommaTP_FINALE.append(somma_true_positive)
+        sommaFP_FINALE.append(somma_false_positive)
+        sommaFN_FINALE.append(somma_false_negative)
+        lista_recall_totale.append(lista_recall)
+        conteggio_frame=0
+
+
+    
+    #CREAZIONE GRAFICO PRECISION X RECALL + SCRIVO SU FILE CSV RISULTATI OTTENUTI
+    evaluator.grafico(nome_video_risultato,lista_precisione_totale,lista_recall_totale)
     tempo=(time.time() - start_time)
-
-    
-    #print(str(lista_precisione))
-    #print("\n\n\n")
-    #print(str(lista_recall))
-    #Provo a costruire il grafico
-    fig, ax = plt.subplots(figsize=(6,6))
-    ax.plot(lista_recall,lista_precisione, label='Precision x Recall')
-    #ax.fill_between(lista_recall,lista_precisione, 0,facecolor="orange",color='blue',alpha=0.2)          # Transparency of the fil
-    ax.set_xlabel('Recall')
-    ax.set_ylabel('Precision')
-    ax.legend(loc='center left');
-    fig.savefig(f'/home/claudio/Scrivania/COGNITIVE_SERVICES_3.0/Risultati/{nome_video_risultato}.png')   # save the figure to file
-    plt.close(fig)    # close the figure
-
-    media_precisione=evaluator.precision_Average(lista_precisione)
-    media_recall=evaluator.recall_Average(lista_recall)
-
-
-    print("Scrivo sul file csv il risultato...\n")
-
-    with open('/home/claudio/Scrivania/COGNITIVE_SERVICES_3.0/Risultati/risultati.csv',mode='a') as csvfile:
-        nomicolonne = ['Model Name', 'Ground Truth(GT)', 'True Positive(TP)','False Positive(FP)','False Negative(FN)','Average Precision','Average Recall','Average Time']
-        writer= csv.DictWriter(csvfile,fieldnames=nomicolonne)
-        writer.writeheader()
-        writer.writerow({ 'Model Name': f'{nome_video_risultato}', 'Ground Truth(GT)': numero_totale_ground_truth ,'True Positive(TP)': somma_true_positive,'False Positive(FP)': somma_false_positive,'False Negative(FN)':somma_false_negative,'Average Precision': media_precisione,'Average Recall':media_recall,'Average Time': tempo})
-
+    for (a,b,c,d,e,f) in zip(lista_precisione_totale,lista_recall_totale,sommaTP_FINALE,sommaFP_FINALE,sommaFN_FINALE,IOU_threshold):
+        media_precisione=evaluator.precision_Average(a)
+        media_recall=evaluator.recall_Average(b)
+        with open('/home/claudio/Scrivania/COGNITIVE_SERVICES_3.0/Risultati/risultati.csv',mode='a') as csvfile:
+            nomicolonne = ['Model Name', 'Ground Truth(GT)', 'True Positive(TP)','False Positive(FP)','False Negative(FN)','Average Precision','Average Recall','Average Time']
+            writer= csv.DictWriter(csvfile,fieldnames=nomicolonne)
+            writer.writeheader()
+            writer.writerow({ 'Model Name': f'{nome_video_risultato} con IOU = {f}', 'Ground Truth(GT)': numero_totale_ground_truth ,'True Positive(TP)': c,'False Positive(FP)': d,'False Negative(FN)':e,'Average Precision': media_precisione,'Average Recall':media_recall,'Average Time': tempo})
 
   

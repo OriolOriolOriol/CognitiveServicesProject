@@ -40,7 +40,6 @@ def detection(path,detection_graph,category_index,nome_video_risultato,numero_gr
     image=cv2.imread(frame)
     if image.size==0:
         sys.exit("L'immagine non è stata caricata correttamente")
-    #print("OK caricata correttamente")
     boxes, scores, classes, num = detect(image,detection_graph)
     for i in range(len(boxes)):
         if classes[i]==1 and scores[i] > 0:
